@@ -1,6 +1,7 @@
 import { makeAutoObservable, toJS, runInAction } from 'mobx';
 import { getBackgroundDefinition, normalizeBackgroundKey } from '@utils/backgroundConfig';
 import { normalizeOption, normalizeShadow, shadowFromIntensity } from '@utils/projectDocument';
+import { KNIT_BAND_DEFAULT, KNIT_CORNER_DEFAULT, KNIT_ROWS_DEFAULT, normalizeKnitBand, normalizeKnitRound, normalizeKnitRows } from '@utils/knitPatterns';
 import history from './history';
 import assetStore from './assetStore';
 
@@ -76,6 +77,9 @@ class Option {
     frameMode = 'cover';
     browserUrl = 'shot.ricoui.com';
     browserHeaderSize = 100;
+    knitBand = KNIT_BAND_DEFAULT;
+    knitRound = KNIT_CORNER_DEFAULT;
+    knitRows = KNIT_ROWS_DEFAULT;
     background = 'gh_img_50';
     backgroundAssetId = null;
     backgroundMode = 'cover';
@@ -176,6 +180,21 @@ class Option {
         if (!Number.isFinite(size)) return;
         this.browserHeaderSize = Math.max(50, Math.min(200, Math.round(size)));
         if (commit) history.commit('browser:header-size');
+    }
+
+    setKnitBand(value, { commit = true } = {}) {
+        this.knitBand = normalizeKnitBand(value);
+        if (commit) history.commit('knit:band');
+    }
+
+    setKnitRound(value) {
+        this.knitRound = normalizeKnitRound(value);
+        history.commit('slider:knit-round');
+    }
+
+    setKnitRows(value, { commit = true } = {}) {
+        this.knitRows = normalizeKnitRows(value);
+        if (commit) history.commit('knit:rows');
     }
 
     setFrameSize(width, height) {
@@ -412,6 +431,7 @@ class Option {
             && this.padding === 0
             && this.paddingBg === 'rgba(255,255,255, 100)'
             && this.round === 10
+            && this.knitRound === KNIT_CORNER_DEFAULT
             && shadow.visible === defaultShadow.visible
             && shadow.x === defaultShadow.x
             && shadow.y === defaultShadow.y
@@ -428,6 +448,7 @@ class Option {
         this.padding = 0;
         this.paddingBg = 'rgba(255,255,255, 100)';
         this.round = 10;
+        this.knitRound = KNIT_CORNER_DEFAULT;
         this.shadow = shadowFromIntensity(3);
         history.commit('image:style-reset');
         return true;
@@ -484,6 +505,9 @@ class Option {
             frameMode: this.frameMode,
             browserUrl: this.browserUrl,
             browserHeaderSize: this.browserHeaderSize,
+            knitBand: this.knitBand,
+            knitRound: this.knitRound,
+            knitRows: this.knitRows,
             background: this.background,
             backgroundAssetId: this.backgroundAssetId,
             backgroundMode: this.backgroundMode,
@@ -527,6 +551,9 @@ class Option {
             this.frameMode = next.frameMode;
             this.browserUrl = next.browserUrl;
             this.browserHeaderSize = next.browserHeaderSize;
+            this.knitBand = next.knitBand;
+            this.knitRound = next.knitRound;
+            this.knitRows = next.knitRows;
             this.background = next.background;
             this.backgroundAssetId = next.backgroundAssetId;
             this.backgroundMode = next.backgroundMode;

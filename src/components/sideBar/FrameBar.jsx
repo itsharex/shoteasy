@@ -12,11 +12,45 @@ import {
     getFrameGroups,
     isDeviceFrame,
 } from '@utils/frameConfig';
+import {
+    KNIT_BAND_MAX,
+    KNIT_BAND_MIN,
+    KNIT_ROWS_MAX,
+    KNIT_ROWS_MIN,
+} from '@utils/knitPatterns';
+import { getKnitPreviewDataUrl } from '@utils/knitFrame';
+import blueKnitThumbnail from '@assets/thumbnails/knit-blue.png';
+import iceKnitThumbnail from '@assets/thumbnails/knit-ice.png';
+import claudeKnitThumbnail from '@assets/thumbnails/knit-claude.png';
+import forestKnitThumbnail from '@assets/thumbnails/knit-forest.png';
+import greenKnitThumbnail from '@assets/thumbnails/knit-green.png';
+import blackKnitThumbnail from '@assets/thumbnails/knit-black.png';
+import googleKnitThumbnail from '@assets/thumbnails/knit-google.png';
+import snowKnitThumbnail from '@assets/thumbnails/knit-snow.png';
+
+const knitThumbnailByPreset = {
+    codex: blueKnitThumbnail,
+    finder: iceKnitThumbnail,
+    claude: claudeKnitThumbnail,
+    spotify: forestKnitThumbnail,
+    meadow: greenKnitThumbnail,
+    midnight: blackKnitThumbnail,
+    google: googleKnitThumbnail,
+    snow: snowKnitThumbnail,
+};
 
 const frameThumbStyle = (frame) => {
     const definition = getFrameDefinition(frame);
     if (definition.kind === 'device') {
         return { backgroundImage: `url(${DEVICE_FRAME_INFO[frame].image})`, backgroundPosition: 'center', backgroundRepeat: 'no-repeat', backgroundSize: 'contain' };
+    }
+    if (definition.kind === 'sweater') {
+        return {
+            backgroundImage: `url(${knitThumbnailByPreset[definition.sweater] || getKnitPreviewDataUrl(definition.sweater)})`,
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+            backgroundSize: '100% 100%',
+        };
     }
     return undefined;
 };
@@ -93,13 +127,48 @@ const BrowserFrameSettings = ({ url, headerSize }) => (
     </div>
 );
 
+const KnitFrameSettings = ({ band, rows, idPrefix = 'knit-frame' }) => (
+    <div className="shoteasy-knit-frame-settings">
+        <div className="shoteasy-knit-frame-settings__title">针织设置</div>
+        <div className="shoteasy-knit-frame-settings__slider-heading">
+            <label htmlFor={`${idPrefix}-band`}>边框厚度</label>
+            <output htmlFor={`${idPrefix}-band`}>{band}px</output>
+        </div>
+        <Slider
+            id={`${idPrefix}-band`}
+            min={KNIT_BAND_MIN}
+            max={KNIT_BAND_MAX}
+            step={1}
+            value={band}
+            onChange={(value) => stores.option.setKnitBand(value, { commit: false })}
+            onChangeComplete={(value) => stores.option.setKnitBand(value)}
+            aria-label="针织外框厚度"
+        />
+        <div className="shoteasy-knit-frame-settings__slider-heading">
+            <label htmlFor={`${idPrefix}-rows`}>针脚密度</label>
+            <output htmlFor={`${idPrefix}-rows`}>{rows} 行</output>
+        </div>
+        <Slider
+            id={`${idPrefix}-rows`}
+            min={KNIT_ROWS_MIN}
+            max={KNIT_ROWS_MAX}
+            step={1}
+            value={rows}
+            onChange={(value) => stores.option.setKnitRows(value, { commit: false })}
+            onChangeComplete={(value) => stores.option.setKnitRows(value)}
+            aria-label="针织外框针脚密度"
+        />
+    </div>
+);
+
 export default observer(function FrameBar() {
     const [showMore, setShowMore] = useState(false);
     const groups = useMemo(() => {
-        const priority = { browser: 0, basic: 1, creative: 2, device: 3 };
+        const priority = { browser: 0, basic: 1, creative: 2, sweater: 3, device: 4 };
         return getFrameGroups().sort((a, b) => priority[a.id] - priority[b.id]);
     }, []);
     const browserFrames = groups.find((group) => group.id === 'browser')?.items || [];
+    const sweaterFrames = groups.find((group) => group.id === 'sweater')?.items || [];
     const selectFrame = (value) => {
         stores.option.setFrame(value);
         if (value === 'macbookpro16') stores.option.setPaddingBg('#000000');
@@ -107,6 +176,7 @@ export default observer(function FrameBar() {
     const device = isDeviceFrame(stores.option.frame);
     const selectedFrame = getFrameDefinition(stores.option.frame);
     const browserSelected = selectedFrame.kind === 'browser' || selectedFrame.kind === 'arc';
+    const knitSelected = selectedFrame.kind === 'sweater';
     return (
         <>
             <section className="shoteasy-frame-panel" aria-labelledby="frame-panel-title">
@@ -121,10 +191,9 @@ export default observer(function FrameBar() {
                 </div>
                 <div className="shoteasy-frame-panel__subheading">浏览器外框</div>
                 <div className="shoteasy-frame-grid is-quick" role="radiogroup" aria-label="常用浏览器外框">
-                    {/* 无外框领头，与 5 个浏览器外框凑满 2 列 × 3 行；「查看全部」抽屉里仍归基础外框组 */}
                     <FrameOption
                         frame="none"
-                        name="quick-frame"
+                        name="quick-browser-frame"
                         compact
                         selected={stores.option.frame === 'none'}
                         onSelect={selectFrame}
@@ -133,7 +202,7 @@ export default observer(function FrameBar() {
                         <FrameOption
                             key={item.id}
                             frame={item.id}
-                            name="quick-frame"
+                            name="quick-browser-frame"
                             compact
                             selected={stores.option.frame === item.id}
                             onSelect={selectFrame}
@@ -144,6 +213,25 @@ export default observer(function FrameBar() {
                     <BrowserFrameSettings
                         url={stores.option.browserUrl}
                         headerSize={stores.option.browserHeaderSize}
+                    />
+                )}
+                <div className="shoteasy-frame-panel__subheading">针织外框</div>
+                <div className="shoteasy-frame-grid is-quick" role="radiogroup" aria-label="针织外框">
+                    {sweaterFrames.map((item) => (
+                        <FrameOption
+                            key={item.id}
+                            frame={item.id}
+                            name="quick-sweater-frame"
+                            compact
+                            selected={stores.option.frame === item.id}
+                            onSelect={selectFrame}
+                        />
+                    ))}
+                </div>
+                {knitSelected && (
+                    <KnitFrameSettings
+                        band={stores.option.knitBand}
+                        rows={stores.option.knitRows}
                     />
                 )}
             </section>
@@ -194,6 +282,13 @@ export default observer(function FrameBar() {
                                     />
                                 ))}
                             </div>
+                            {group.id === 'sweater' && knitSelected && (
+                                <KnitFrameSettings
+                                    band={stores.option.knitBand}
+                                    rows={stores.option.knitRows}
+                                    idPrefix="knit-frame-drawer"
+                                />
+                            )}
                         </section>
                     ))}
                     {device && <div className="shoteasy-frame-device-note">设备外框当前使用：{selectedFrame.title}</div>}

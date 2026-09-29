@@ -90,6 +90,10 @@ React View → Leafer App → Frame（最终画布）
 
 选择浏览器外框时，会按 Safari/Chrome/Arc 定义创建 Leafer `Rect`/`Text` 与项目内 SVG 图标节点；标题栏基准高度按样式区分，再乘以 `browserHeaderSize`（50%–200%，默认 100%），地址栏渲染 `browserUrl`。标题高度会从图片可用高度中扣除，保证整个浏览器框仍落在画布布局范围内。选择设备框时，会根据每个设备的比例常量计算屏幕开口。HDR 开启后先通过 Canvas 生成增强后的 data URL，再替换图片填充。
 
+针织外框使用 `src/utils/knitPatterns.js` 保存 8 个预设的图案与颜色，`src/utils/knitFrame.js` 将四条边的针脚和圆角底纹生成透明 SVG data URL，再作为 Screenshot 的装饰节点加入图片下方。外框主面板依次展示浏览器外框、8 个针织预设及选中时的针织设置；预设卡片使用 `src/assets/thumbnails/` 下对应的 8 张透明 `knit-*.png`，缺图时回退到生成式预览，缩略图不参与实际画布或导出。边框厚度（12–48px）和针脚密度由 `option.knitBand`、`option.knitRows` 控制；针织内角使用独立的 `option.knitRound`（默认 36px，右侧滑块可调至 0px，输入框上限 999px），外角同步增加边框厚度。这些值都进入项目快照；旧快照按原有圆角渲染值迁移。缩放、旋转、PNG/JPG/WebP 导出与其他外框共用同一条 Leafer 链路。
+
+背景配置的 `cloud_img_*` 旧键继续有效，并与 25 张 `nature_img_*` 一起展示在「城市自然」图库。「桌面」的 `desktop_img_1`–`desktop_img_5` 保持原照片和键，另增 5 张壁纸。城市自然与桌面图在列表中使用 160px 宽、质量 60 的缩略图；点击后下载最多 2400px 宽、质量 80 的图片 Blob，再用于画布和导出。其余旧 Unsplash 背景也会生成独立的 160px 缩略图，图片请求失败时沿用原有错误提示。
+
 ### ShapeLine
 
 `ShapeLine.jsx` 根据 `type` 将 MobX 数据映射为 Leafer 图形：

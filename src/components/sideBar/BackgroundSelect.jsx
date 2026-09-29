@@ -6,7 +6,7 @@ export const BackgroundSelect = ({ type, options, onChange, value }) => {
     const lists = options?.length
         ? options
         : getBackgroundEntries(type).map((item) => ({ key: item.key, value: item }));
-    const isImageCategory = type === 'cosmic' || type === 'cloud' || type === 'desktop';
+    const isImageCategory = type === 'cloud' || type === 'cosmic' || type === 'nature' || type === 'desktop';
     return (
         <Radio.Group
             onChange={(e) => onChange(e.target.value)}
@@ -25,8 +25,7 @@ export const BackgroundSelect = ({ type, options, onChange, value }) => {
                 >
                     {item.value.type === 'builtin-image' ? (
                         <div className={cn('w-12 h-8 rounded-md overflow-hidden')}>
-                            {/* 本地图（gh_img_*）带 preview 缩略图；远程 Unsplash 图沿用 &w=48 参数缩放 */}
-                            <img src={item.value.preview || `${item.value.class}&w=48`} alt="" className='w-full h-full object-cover object-center' />
+                            <img src={item.value.preview || item.value.class} alt="" loading="lazy" className='w-full h-full object-cover object-center' />
                         </div>
                     ) : (
                         <div

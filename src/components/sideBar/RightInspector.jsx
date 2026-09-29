@@ -6,7 +6,7 @@ import ColorPicker from '@components/ColorPicker';
 import stores from '@stores';
 import backgroundConfig, { getBackgroundDefinition, QUICK_IMAGE_KEYS } from '@utils/backgroundConfig';
 import { cn } from '@utils/utils';
-import { isDeviceFrame } from '@utils/frameConfig';
+import { getFrameCornerRadius, getFrameDefinition, isDeviceFrame } from '@utils/frameConfig';
 import CropperImage from './CropperImage';
 import Position from './Position';
 import Watermark from './Watermark';
@@ -114,6 +114,7 @@ export const InspectorContent = observer(() => {
         });
     };
     const deviceFrame = isDeviceFrame(stores.option.frame);
+    const knitFrame = getFrameDefinition(stores.option.frame).kind === 'sweater';
     return (
         <div className="shoteasy-inspector relative h-full flex flex-col">
             <div className="shoteasy-inspector__scroll flex-1 overflow-y-auto overflow-x-hidden px-4">
@@ -262,8 +263,8 @@ export const InspectorContent = observer(() => {
                             label="圆角"
                             min={0}
                             max={100}
-                            value={stores.option.round}
-                            onChange={(e) => stores.option.setRound(e)}
+                            value={getFrameCornerRadius(stores.option.frame, stores.option.round, stores.option.knitRound)}
+                            onChange={(value) => knitFrame ? stores.option.setKnitRound(value) : stores.option.setRound(value)}
                             inputMax={999}
                         />
                     </div>

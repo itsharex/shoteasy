@@ -509,7 +509,7 @@ const legacyBackgroundConfig = {
             url: 'https://images.unsplash.com/photo-1586455122341-927f2dec0691?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3wxMTY5OTZ8MHwxfHNlYXJjaHw3MHx8Z3JhZGllbnR8ZW58MHx8fHwxNzAzMDQ3MjE1fDA&ixlib=rb-4.0.3&q=80'
         }
     },
-    // 天空白云（Unsplash 免费图，简化参数：auto/fit/w=2400 控制预览与导出分辨率）
+    // 旧天空图片继续保留原键，已有草稿仍能恢复。
     cloud_img_1: {
         class: 'https://images.unsplash.com/photo-1595865749889-b37a43c4eba4?auto=format&fit=crop&w=2400&q=80',
         fill: {
@@ -545,48 +545,83 @@ const legacyBackgroundConfig = {
             url: 'https://images.unsplash.com/photo-1668525389832-4632957c56e6?auto=format&fit=crop&w=2400&q=80'
         }
     },
-    desktop_img_1: {
-        class: 'https://images.unsplash.com/photo-1511860810434-a92f84c6f01e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80',
-        fill: {
-            type: 'image',
-            url: 'https://images.unsplash.com/photo-1511860810434-a92f84c6f01e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80'
-        }
-    },
-    desktop_img_2: {
-        class: 'https://images.unsplash.com/photo-1554110397-9bac083977c6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80',
-        fill: {
-            type: 'image',
-            url: 'https://images.unsplash.com/photo-1554110397-9bac083977c6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80'
-        }
-    },
-    desktop_img_3: {
-        class: 'https://images.unsplash.com/photo-1671180881490-8af6e9c3eaf1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80',
-        fill: {
-            type: 'image',
-            url: 'https://images.unsplash.com/photo-1671180881490-8af6e9c3eaf1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80'
-        }
-    },
-    desktop_img_4: {
-        class: 'https://images.unsplash.com/photo-1671549296089-88b3a6eb347e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80',
-        fill: {
-            type: 'image',
-            url: 'https://images.unsplash.com/photo-1671549296089-88b3a6eb347e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80'
-        }
-    },
-    desktop_img_5: {
-        class: 'https://images.unsplash.com/photo-1668718031554-9c05b5d03750?&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&q=80',
-        fill: {
-            type: 'image',
-            url: 'https://images.unsplash.com/photo-1668718031554-9c05b5d03750?&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&q=80'
-        }
-    },
+};
+
+// 城市自然：六种氛围各四张，另加一张沙漠；在界面中作为同一个图库展示。
+const NATURE_PHOTOS = [
+    // 草原
+    ['1500382017468-9049fed747ef', '草原 · 金色山丘'],
+    ['1472396961693-142e6e269027', '草原 · 林间牧场'],
+    ['1511497584788-876760111969', '草原 · 绿色田野'],
+    ['1470071459604-3b5ec3a7fe05', '草原 · 晨雾山谷'],
+    // 城市
+    ['1519501025264-65ba15a82390', '城市 · 黄昏楼群'],
+    ['1480714378408-67cf0d13bc1b', '城市 · 高楼天际线'],
+    ['1514565131-fce0801e5785', '城市 · 街道建筑'],
+    ['1477959858617-67f85cf4f1df', '城市 · 日光街区'],
+    // 雪地
+    ['1642155549055-ff351114a8a9', '雪地 · 雪山远景'],
+    ['1517299321609-52687d1bc55a', '雪地 · 冰雪森林'],
+    ['1418985991508-e47386d96a71', '雪地 · 冬季山岭'],
+    ['1485546784815-e380f3297414', '雪地 · 雪峰与云'],
+    // 风景
+    ['1501785888041-af3ef285b470', '风景 · 山间湖泊'],
+    ['1441974231531-c6227db76b6e', '风景 · 阳光树林'],
+    ['1433086966358-54859d0ed716', '风景 · 瀑布溪谷'],
+    ['1464822759023-fed622ff2c3b', '风景 · 山脉全景'],
+    // 海边
+    ['1507525428034-b723cf961d3e', '海边 · 碧蓝海岸'],
+    ['1473116763249-2faaef81ccda', '海边 · 海浪沙滩'],
+    ['1519046904884-53103b34b206', '海边 · 岛屿沙滩'],
+    ['1500375592092-40eb2168fd21', '海边 · 近岸浪花'],
+    // 夜景
+    ['1519681393784-d120267933ba', '夜景 · 繁星雪山'],
+    ['1462331940025-496dfbfc7564', '夜景 · 星河'],
+    ['1483347756197-71ef80e95f73', '夜景 · 夜空山岭'],
+    ['1446776811953-b23d57bd21aa', '夜景 · 地平线星空'],
+    // 沙漠
+    ['1473580044384-7ba9967e16a0', '沙漠 · 金色沙丘'],
+];
+
+// 保留原有 1–5 的键和图片；新壁纸排在后面，避免旧草稿选项失效。
+const DESKTOP_PHOTOS = [
+    ['1511860810434-a92f84c6f01e', '桌面壁纸 1'],
+    ['1554110397-9bac083977c6', '桌面壁纸 2'],
+    ['1671180881490-8af6e9c3eaf1', '桌面壁纸 3'],
+    ['1671549296089-88b3a6eb347e', '桌面壁纸 4'],
+    ['1668718031554-9c05b5d03750', '桌面壁纸 5'],
+    ['1761623135394-ce45aaad36ca', '桌面 · 暖色朦胧'],
+    ['1516739089214-59baa011fdb9', '桌面 · 白色建筑'],
+    ['1533232117614-42803fbf6c45', '桌面 · 深绿叶片'],
+    ['1685009498451-a32a731b4150', '桌面 · 奶油浮雕'],
+    ['1709377059113-3c429b2e0796', '桌面 · 深色抽象'],
+];
+
+const createRemotePhotoConfig = (photos, prefix) => Object.fromEntries(photos.map(([id, label], index) => {
+    const url = `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=2400&q=80`;
+    return [`${prefix}_img_${index + 1}`, {
+        class: url,
+        preview: `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=160&q=60`,
+        fill: { type: 'image', url },
+        label,
+    }];
+}));
+
+const natureBackgroundConfig = createRemotePhotoConfig(NATURE_PHOTOS, 'nature');
+const desktopBackgroundConfig = createRemotePhotoConfig(DESKTOP_PHOTOS, 'desktop');
+
+const getRemotePreviewUrl = (url) => {
+    const previewUrl = new URL(url);
+    previewUrl.searchParams.set('w', '160');
+    previewUrl.searchParams.set('q', '60');
+    return previewUrl.toString();
 };
 
 const getBackgroundType = (key) => {
     if (key === 'none') return 'none';
     if (key.startsWith('solid_') || key === 'custom_solid') return 'solid';
     if (key.startsWith('default_') || key.startsWith('gradient_')) return 'gradient';
-    if (key.startsWith('gh_img_') || key.startsWith('cosmic_img_') || key.startsWith('cloud_img_') || key.startsWith('desktop_img_')) return 'builtin-image';
+    if (key.startsWith('gh_img_') || key.startsWith('cosmic_img_') || key.startsWith('cloud_img_') || key.startsWith('desktop_img_') || key.startsWith('nature_img_')) return 'builtin-image';
     return 'solid';
 };
 
@@ -596,7 +631,7 @@ const getBackgroundCategory = (key) => {
     if (key.startsWith('solid_') || key === 'custom_solid') return 'solid';
     if (key.startsWith('gradient_')) return 'gradient';
     if (key.startsWith('gh_img_') || key.startsWith('cosmic_img_')) return 'cosmic';
-    if (key.startsWith('cloud_img_')) return 'cloud';
+    if (key.startsWith('cloud_img_') || key.startsWith('nature_img_')) return 'nature';
     if (key.startsWith('desktop_img_')) return 'desktop';
     return 'custom';
 };
@@ -636,9 +671,28 @@ const normalizedBackgroundConfig = {
                 key,
                 type: getBackgroundType(key),
                 category: getBackgroundCategory(key),
-                label: key,
+                label: value.label || key,
+                preview: value.preview || (value.class?.startsWith('https://images.unsplash.com/')
+                    ? getRemotePreviewUrl(value.class)
+                    : undefined),
             },
         ])
+    ),
+    ...Object.fromEntries(
+        Object.entries(natureBackgroundConfig).map(([key, value]) => [key, {
+            ...value,
+            key,
+            type: 'builtin-image',
+            category: 'nature',
+        }])
+    ),
+    ...Object.fromEntries(
+        Object.entries(desktopBackgroundConfig).map(([key, value]) => [key, {
+            ...value,
+            key,
+            type: 'builtin-image',
+            category: 'desktop',
+        }])
     ),
 };
 
@@ -652,12 +706,12 @@ export const normalizeBackgroundKey = (value) => {
 export const getBackgroundDefinition = (value) => normalizedBackgroundConfig[normalizeBackgroundKey(value)];
 
 /**
- * 检查器「预设」区直出的图片背景（精选 10 张：4 gradientshub 渐变 + 2 天空 + 2 宇宙 + 2 桌面，
+ * 检查器「预设」区直出的图片背景（精选 10 张：4 gradientshub 渐变 + 2 城市自然 + 2 宇宙 + 2 桌面，
  * 恰好凑满两行五列网格），免开「更多」抽屉即可一键选中；完整列表仍在抽屉里。
  */
 export const QUICK_IMAGE_KEYS = [
     'gh_img_50', 'gh_img_47', 'gh_img_44', 'gh_img_13',
-    'cloud_img_1', 'cloud_img_2',
+    'nature_img_1', 'nature_img_5',
     'cosmic_img_1', 'cosmic_img_5',
     'desktop_img_1', 'desktop_img_2',
 ].filter((key) => Boolean(normalizedBackgroundConfig[key]));

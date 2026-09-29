@@ -12,6 +12,8 @@ import downloadSvg from '@assets/icon/dowload.svg?raw';
 import shareSvg from '@assets/icon/Toolbar-target.svg?raw';
 import plusSvg from '@assets/icon/+.svg?raw';
 import copySvg from '@assets/icon/Toolbar Item-copy.svg?raw';
+import { createKnitFrameDataUrl } from '@utils/knitFrame';
+import { KNIT_BAND_DEFAULT, normalizeKnitBand, normalizeKnitRound } from '@utils/knitPatterns';
 
 export const BROWSER_HEADER_SIZE_MIN = 50;
 export const BROWSER_HEADER_SIZE_MAX = 200;
@@ -66,6 +68,14 @@ export const FRAME_DEFINITIONS = [
     { id: 'stack', title: '单层堆叠', description: '一层错位卡片', group: 'creative', kind: 'stack', inset: 26, thumbnail: 'stack' },
     { id: 'stack2', title: '双层堆叠', description: '两层错位卡片', group: 'creative', kind: 'stack2', inset: 32, thumbnail: 'stack2' },
     { id: 'polaroid', title: '拍立得', description: '加宽底部相纸', group: 'creative', kind: 'polaroid', inset: 18, bottom: 54, thumbnail: 'polaroid' },
+    { id: 'sweaterCodex', title: '蓝色波纹', description: '蓝色波纹与奶油饰线', group: 'sweater', kind: 'sweater', sweater: 'codex', inset: KNIT_BAND_DEFAULT, thumbnail: 'sweater-codex' },
+    { id: 'sweaterFinder', title: '冰蓝格纹', description: '冰蓝格纹与深蓝底色', group: 'sweater', kind: 'sweater', sweater: 'finder', inset: KNIT_BAND_DEFAULT, thumbnail: 'sweater-finder' },
+    { id: 'sweaterClaude', title: '杏色星点', description: '杏色羊毛与奶油星点', group: 'sweater', kind: 'sweater', sweater: 'claude', inset: KNIT_BAND_DEFAULT, thumbnail: 'sweater-claude' },
+    { id: 'sweaterSpotify', title: '森林绿', description: '森林绿与黄油棋盘', group: 'sweater', kind: 'sweater', sweater: 'spotify', inset: KNIT_BAND_DEFAULT, thumbnail: 'sweater-spotify' },
+    { id: 'sweaterMeadow', title: '绿色草原', description: '嫩绿底色与浅绿草叶', group: 'sweater', kind: 'sweater', sweater: 'meadow', inset: KNIT_BAND_DEFAULT, thumbnail: 'sweater-meadow' },
+    { id: 'sweaterMidnight', title: '黑色针织', description: '炭黑羊毛与石墨色纹理', group: 'sweater', kind: 'sweater', sweater: 'midnight', inset: KNIT_BAND_DEFAULT, thumbnail: 'sweater-midnight' },
+    { id: 'sweaterGoogle', title: 'Google 多彩', description: '蓝红黄绿交错针脚', group: 'sweater', kind: 'sweater', sweater: 'google', inset: KNIT_BAND_DEFAULT, thumbnail: 'sweater-google' },
+    { id: 'sweaterSnow', title: '白色雪地', description: '暖白绒线与冰蓝雪花', group: 'sweater', kind: 'sweater', sweater: 'snow', inset: KNIT_BAND_DEFAULT, thumbnail: 'sweater-snow' },
     { id: 'macosBarLight', title: 'Safari', description: '浅色单栏', group: 'browser', kind: 'browser', browserStyle: 'safari', theme: 'light', baseHeaderHeight: 54, thumbnail: 'mac-light' },
     { id: 'macosBarDark', title: 'Safari 深色', description: '深色单栏', group: 'browser', kind: 'browser', browserStyle: 'safari', theme: 'dark', baseHeaderHeight: 54, thumbnail: 'mac-dark' },
     { id: 'windowsBarLight', title: 'Chrome', description: '浅色标签与地址栏', group: 'browser', kind: 'browser', browserStyle: 'chrome', theme: 'light', baseHeaderHeight: 86, thumbnail: 'windows-light' },
@@ -81,6 +91,7 @@ export const FRAME_DEFINITIONS = [
 export const FRAME_GROUPS = [
     { id: 'basic', title: '基础外框' },
     { id: 'creative', title: '创意外框' },
+    { id: 'sweater', title: '针织外框' },
     { id: 'browser', title: '浏览器' },
     { id: 'device', title: '设备' },
 ];
@@ -93,6 +104,15 @@ export const getFrameGroups = () => FRAME_GROUPS.map((group) => ({
     items: FRAME_DEFINITIONS.filter((item) => item.group === group.id),
 }));
 export const isDeviceFrame = (frame) => getFrameDefinition(frame).kind === 'device';
+export const getFrameInset = (frame, options = {}) => {
+    const definition = getFrameDefinition(frame);
+    return definition.kind === 'sweater'
+        ? normalizeKnitBand(options.knitBand)
+        : (definition.inset || 0);
+};
+export const getFrameCornerRadius = (frame, round, knitRound) => getFrameDefinition(frame).kind === 'sweater'
+    ? normalizeKnitRound(knitRound)
+    : round;
 export const getBrowserHeaderHeight = (frame, headerSize = BROWSER_HEADER_SIZE_DEFAULT) => {
     const definition = getFrameDefinition(frame);
     if (definition.kind !== 'browser' && definition.kind !== 'arc') return 0;
@@ -106,6 +126,10 @@ export const getBrowserHeaderHeight = (frame, headerSize = BROWSER_HEADER_SIZE_D
  */
 export const getFrameMetrics = (frame, width, height, options = {}) => {
     const definition = getFrameDefinition(frame);
+    const inset = getFrameInset(frame, options);
+    const bottom = definition.kind === 'sweater'
+        ? inset
+        : (definition.bottom || inset);
     const metrics = {
         width,
         height,
@@ -116,8 +140,8 @@ export const getFrameMetrics = (frame, width, height, options = {}) => {
         boxWidth: width,
         boxHeight: height,
         headerHeight: 0,
-        inset: definition.inset || 0,
-        bottom: definition.bottom || definition.inset || 0,
+        inset,
+        bottom,
     };
 
     if (definition.kind === 'browser' || definition.kind === 'arc') {
@@ -392,6 +416,28 @@ export const createFrameDecorations = (frame, metrics, options = {}) => {
             addToolbarAsset('copy', width - 28 * controlScale, centerY);
             nodes.push(makeRect({ x: 0, y: headerHeight - 1, width, height: 1, fill: divider }));
         }
+    }
+
+    if (definition.kind === 'sweater') {
+        nodes.push(makeRect({
+            x: 0,
+            y: 0,
+            width: totalWidth,
+            height: totalHeight,
+            hittable: false,
+            fill: {
+                type: 'image',
+                url: createKnitFrameDataUrl({
+                    width: totalWidth,
+                    height: totalHeight,
+                    band: metrics.inset,
+                    rows: options.knitRows,
+                    round: options.round,
+                    presetId: definition.sweater,
+                }),
+                mode: 'stretch',
+            },
+        }));
     }
 
     if (definition.kind === 'device') {

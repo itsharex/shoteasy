@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { Box, Rect } from 'leafer-ui';
 import stores from '@stores';
 import { computedSize, enhanceImageToHdr, getPosition, getRotatedPosition, getMargin } from '@utils/utils';
-import { createFrameDecorations, getBrowserHeaderHeight, getFrameDefinition, getFrameMetrics, isDeviceFrame } from '@utils/frameConfig';
+import { createFrameDecorations, getBrowserHeaderHeight, getFrameCornerRadius, getFrameDefinition, getFrameInset, getFrameMetrics, isDeviceFrame } from '@utils/frameConfig';
 import { debounce } from 'lodash';
 
 const createSnap = debounce(() => {
@@ -94,10 +94,14 @@ export default observer(function Screenshot({ parent }) {
 
     useEffect(() => {
         const definition = getFrameDefinition(stores.option.frame);
-        container.cornerRadius = stores.option.round;
-        image.cornerRadius = definition.kind === 'browser' || definition.kind === 'arc' ? null : stores.option.round;
+        const frameInset = getFrameInset(stores.option.frame, { knitBand: stores.option.knitBand });
+        const frameRound = getFrameCornerRadius(stores.option.frame, stores.option.round, stores.option.knitRound);
+        container.cornerRadius = definition.kind === 'sweater'
+            ? frameRound + frameInset
+            : stores.option.round;
+        image.cornerRadius = definition.kind === 'browser' || definition.kind === 'arc' ? null : frameRound;
         createSnap();
-    }, [container, image, stores.option.frame, stores.option.round]);
+    }, [container, image, stores.option.frame, stores.option.knitBand, stores.option.knitRound, stores.option.round]);
 
     useEffect(() => {
         const definition = getFrameDefinition(stores.option.frame);
@@ -135,6 +139,8 @@ export default observer(function Screenshot({ parent }) {
             browserUrl,
             frame,
             frameConf,
+            knitBand,
+            knitRows,
             offsetX,
             offsetY,
             padding,
@@ -143,12 +149,12 @@ export default observer(function Screenshot({ parent }) {
         } = stores.option;
         const { img } = stores.editor;
         const definition = getFrameDefinition(frame);
+        const frameRound = getFrameCornerRadius(frame, stores.option.round, stores.option.knitRound);
         const margin = getMargin(frameConf.width, frameConf.height);
-        const inset = definition.kind !== 'none' && definition.kind !== 'stroke' && definition.kind !== 'browser' && definition.kind !== 'arc'
-            ? (definition.inset || 0)
-            : 0;
-        const bottomInset = definition.kind !== 'none' && definition.kind !== 'stroke' && definition.kind !== 'browser' && definition.kind !== 'arc'
-            ? (definition.bottom || inset)
+        const hasBoxInset = !['none', 'stroke', 'browser', 'arc'].includes(definition.kind);
+        const inset = hasBoxInset ? getFrameInset(frame, { knitBand }) : 0;
+        const bottomInset = hasBoxInset
+            ? (definition.kind === 'sweater' ? inset : (definition.bottom || inset))
             : 0;
         const maxWidth = Math.max(1, frameConf.width - margin - inset * 2);
         const browserHeaderHeight = getBrowserHeaderHeight(frame, browserHeaderSize);
@@ -163,7 +169,7 @@ export default observer(function Screenshot({ parent }) {
                 height: Math.max(1, baseContentSize.height * scale),
             }
             : baseContentSize;
-        const metrics = getFrameMetrics(frame, contentSize.width, contentSize.height, { headerSize: browserHeaderSize });
+        const metrics = getFrameMetrics(frame, contentSize.width, contentSize.height, { headerSize: browserHeaderSize, knitBand });
         const { totalWidth, totalHeight, headerHeight } = metrics;
         // 平面布局：scale 为二维缩放，rotation（Z 轴）直接作用于 container；
         // 旋转时 origin=center，x/y 是未缩放盒子的左上角（见下方换算）。
@@ -186,6 +192,9 @@ export default observer(function Screenshot({ parent }) {
         positionX += offsetX;
         positionY += offsetY;
         const decorationState = createFrameDecorations(frame, metrics, {
+            knitBand,
+            knitRows,
+            round: frameRound,
             shadow: stores.option.shadow,
             url: browserUrl,
         });
@@ -196,6 +205,9 @@ export default observer(function Screenshot({ parent }) {
         container.stroke = decorationState.stroke ?? null;
         container.width = totalWidth;
         container.height = totalHeight;
+        container.cornerRadius = definition.kind === 'sweater'
+            ? frameRound + metrics.inset
+            : stores.option.round;
         container.scaleX = hasIndependentBrowserHeader ? 1 : scale;
         container.scaleY = hasIndependentBrowserHeader ? 1 : scale;
         container.skewX = 0;
@@ -208,7 +220,8 @@ export default observer(function Screenshot({ parent }) {
         box.height = metrics.boxHeight;
         box.x = metrics.boxX;
         box.y = metrics.boxY;
-        box.cornerRadius = definition.kind === 'device' && frame === 'iphonepro' ? metrics.boxWidth * 0.1 : null;
+        box.cornerRadius = definition.kind === 'sweater' ? frameRound
+            : definition.kind === 'device' && frame === 'iphonepro' ? metrics.boxWidth * 0.1 : null;
         const effectivePadding = hasIndependentBrowserHeader ? padding * scale : padding;
         const imageWidth = Math.max(1, metrics.boxWidth - effectivePadding);
         const imageHeight = Math.max(1, Math.round(imageWidth * metrics.boxHeight / Math.max(1, metrics.boxWidth)));
@@ -295,7 +308,7 @@ export default observer(function Screenshot({ parent }) {
                     height: Math.max(1, baseContentSize.height * safeScale),
                 }
                 : baseContentSize;
-            const nextMetrics = getFrameMetrics(frame, nextContentSize.width, nextContentSize.height, { headerSize: browserHeaderSize });
+            const nextMetrics = getFrameMetrics(frame, nextContentSize.width, nextContentSize.height, { headerSize: browserHeaderSize, knitBand });
             const nextWidth = nextMetrics.totalWidth;
             const nextHeight = nextMetrics.totalHeight;
             if (nextRotation !== 0) {
@@ -329,7 +342,7 @@ export default observer(function Screenshot({ parent }) {
             box.cornerRadius = null;
             container.cornerRadius = stores.option.round;
         };
-    }, [box, container, image, stores.option.align, stores.option.browserHeaderSize, stores.option.browserUrl, stores.option.frame, stores.option.frameConf.width, stores.option.frameConf.height, stores.option.offsetX, stores.option.offsetY, stores.option.padding, stores.option.rotation, stores.option.scale, stores.option.shadow]);
+    }, [box, container, image, stores.option.align, stores.option.browserHeaderSize, stores.option.browserUrl, stores.option.frame, stores.option.frameConf.width, stores.option.frameConf.height, stores.option.knitBand, stores.option.knitRows, stores.option.knitRound, stores.option.offsetX, stores.option.offsetY, stores.option.padding, stores.option.rotation, stores.option.round, stores.option.scale, stores.option.shadow]);
 
     useEffect(() => {
         parent.add(container);

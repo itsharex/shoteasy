@@ -1,4 +1,6 @@
 import { getBackgroundDefinition, normalizeBackgroundKey } from '@utils/backgroundConfig';
+import { getFrameDefinition } from '@utils/frameConfig';
+import { KNIT_BAND_DEFAULT, KNIT_CORNER_DEFAULT, KNIT_ROWS_DEFAULT, normalizeKnitBand, normalizeKnitRound, normalizeKnitRows } from '@utils/knitPatterns';
 
 const BACKGROUND_MODES = ['cover', 'fit', 'stretch'];
 const BACKGROUND_ALIGNS = ['top-left', 'top', 'top-right', 'left', 'center', 'right', 'bottom-left', 'bottom', 'bottom-right'];
@@ -123,6 +125,9 @@ export function defaultOption() {
         frameMode: 'cover',
         browserUrl: 'shot.ricoui.com',
         browserHeaderSize: 100,
+        knitBand: KNIT_BAND_DEFAULT,
+        knitRound: KNIT_CORNER_DEFAULT,
+        knitRows: KNIT_ROWS_DEFAULT,
         background: 'gh_img_50',
         backgroundAssetId: null,
         backgroundMode: 'cover',
@@ -246,6 +251,12 @@ export function normalizeOption(raw) {
     out.browserHeaderSize = Number.isFinite(browserHeaderSize)
         ? Math.max(50, Math.min(200, Math.round(browserHeaderSize)))
         : base.browserHeaderSize;
+    out.knitBand = normalizeKnitBand(raw.knitBand);
+    const legacyKnitRound = getFrameDefinition(out.frame).kind === 'sweater'
+        ? Math.max(KNIT_CORNER_DEFAULT, Number(raw.round) || 0)
+        : KNIT_CORNER_DEFAULT;
+    out.knitRound = normalizeKnitRound(raw.knitRound ?? legacyKnitRound);
+    out.knitRows = normalizeKnitRows(raw.knitRows);
     out.size = { ...base.size, ...(raw.size || {}) };
     // 阴影：旧文档/旧 store 存的是 0-6 number，统一迁移为完整配置对象
     out.shadow = normalizeShadow(raw.shadow);

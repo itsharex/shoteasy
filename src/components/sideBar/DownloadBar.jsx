@@ -97,6 +97,20 @@ export default observer(function DownloadBar() {
                         </span>
                     </div>
                 )}
+                <Button
+                    type="primary"
+                    block
+                    className="mt-3"
+                    icon={<Icon.Download size={16} />}
+                    loading={loading}
+                    disabled={!stores.editor.isEditing}
+                    onClick={() => {
+                        setOpen(false);
+                        toDownload();
+                    }}
+                >
+                    导出 {format.toUpperCase()} · {ratio}x
+                </Button>
             </div>
         </div>
     );

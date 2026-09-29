@@ -151,8 +151,8 @@ export default observer(function DrawerBar({ showMore, onChange }) {
                         </a>
                     </div>
                     <BackgroundSelect type="cosmic" onChange={onSelectChange} value={stores.option.background} />
-                    <h4 className="text-sm font-medium py-4">天空白云</h4>
-                    <BackgroundSelect type="cloud" onChange={onSelectChange} value={stores.option.background} />
+                    <h4 className="text-sm font-medium py-4">城市自然</h4>
+                    <BackgroundSelect type="nature" onChange={onSelectChange} value={stores.option.background} />
                     <h4 className="text-sm font-medium py-4">桌面</h4>
                     <BackgroundSelect type="desktop" onChange={onSelectChange} value={stores.option.background} />
                 </div>
